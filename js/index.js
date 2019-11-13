@@ -1,7 +1,7 @@
-var spriteSheet = new SpriteSheet("../img/tileset.png");
+var spriteSheet = new SpriteSheet("img/tileset.png");
 
 spriteSheet.setLoad(() => {
-  var tiled = new Tiled("../maps/test.json");
+  var tiled = new Tiled("maps/test.json");
   tiled.load().then(() => {
     for (var layer of tiled.layers) {
       var ren = tiled.RendererForLayer(layer);
