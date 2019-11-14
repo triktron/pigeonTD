@@ -1,3 +1,5 @@
+var ani = new Animation();
+
 class SpriteSheet {
   constructor(url, size = 16) {
     this.url = url;
@@ -44,6 +46,21 @@ class SpriteSheet {
   }
 }
 
+class SpriteSheetLoader {
+  constructor(spritesheets, cb) {
+    this.left = Object.keys(spritesheets).length;
+    this.spritesheets = spritesheets;
+    this.cb = cb;
+
+    for (var spriteSheet of Object.keys(spritesheets)) spritesheets[spriteSheet].setLoad(this.checkDone.bind(this));
+  }
+
+  checkDone() {
+    this.left--;
+    if (this.left == 0) this.cb(this.spritesheets);
+  }
+}
+
 class TileMap {
   constructor(tiles, width, height) {
     this.tiles = tiles;
@@ -53,19 +70,19 @@ class TileMap {
 }
 
 class TileMapRenderer {
-  constructor(tileMap, spriteSheet) {
+  constructor(tileMap, spriteSheet, width, height) {
     this.tileMap = tileMap;
     this.spriteSheet = spriteSheet;
 
-    this.GenerateCanvas();
+    this.GenerateCanvas(width, height);
   }
 
-  GenerateCanvas() {
+  GenerateCanvas(width, height) {
     this.c = document.createElement("canvas");
     this.ctx = this.c.getContext("2d");
     this.ctx.imageSmoothingEnabled = false;
-    this.c.width = this.tileMap.width * this.spriteSheet.size;
-    this.c.height = this.tileMap.height * this.spriteSheet.size;
+    this.c.width = width;
+    this.c.height = height;
     document.body.append(this.c);
   }
 
@@ -87,6 +104,70 @@ class TileMapRenderer {
   }
 }
 
+class TowerMap {
+  constructor(tiles, width, height) {
+    this.tiles = tiles;
+    this.rotation = 0;
+    this.width = width;
+    this.height = height;
+  }
+}
+
+class TowerMapRenderer {
+  constructor(tileMap, spriteSheet) {
+    this.tileMap = tileMap;
+    this.spriteSheet = spriteSheet;
+
+    this.GenerateCanvas();
+
+    ani.AddCaller(function(passed) {
+      this.Move(passed);
+      this.Render();
+    }.bind(this));
+  }
+
+  GenerateCanvas() {
+    this.c = document.createElement("canvas");
+    this.ctx = this.c.getContext("2d");
+    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.webkitImageSmoothingEnabled = false;
+    this.ctx.mozImageSmoothingEnabled = false;
+    console.log(this.spriteSheet);
+    this.c.width = this.tileMap.width * this.spriteSheet.size ;
+    this.c.height = this.tileMap.height * this.spriteSheet.size;
+    document.body.append(this.c);
+  }
+
+  Render() {
+  this.ctx.clearRect(0, 0, this.c.width, this.c.height);
+
+  var tileMap = this.tileMap.tiles;
+  for (var tile in tileMap) {
+    if (tileMap[tile]) {
+      var destinationRect = this.GetDestinationRect(tile);
+
+      this.ctx.save();
+      this.ctx.translate(destinationRect.pos.x + destinationRect.size.x/2, destinationRect.pos.y + destinationRect.size.y/2);
+      this.ctx.rotate(this.tileMap.rotation );
+      destinationRect.pos = destinationRect.size.devide(-2);
+      this.spriteSheet.DrawOnCanvas(this.ctx, tileMap[tile] - 1,
+        destinationRect);
+      this.ctx.restore();
+    }
+  }
+}
+
+  GetDestinationRect(tile) {
+    var pos = new Vector2(tile % this.tileMap.width, Math.floor(tile / this.tileMap.width)).multiply(this.spriteSheet.size);
+    var size = new Vector2(this.spriteSheet.size, this.spriteSheet.size);
+    return new Rectangle(pos, size);
+  }
+
+  Move(passed) {
+    this.tileMap.rotation += 0.01;
+  }
+}
+
 class ObjectMap {
   constructor(points, offsetX, offsetY, width, height) {
     points = points.map(p => {
@@ -97,32 +178,31 @@ class ObjectMap {
     });
 
     this.line = new Line(points);
-    this.objects = new Array(22).fill(1).map((a, i) => {return {id:i%4,dist:i * 30};});
+    this.objects = [];//new Array(22).fill(1).map((a, i) => {return {id:i%4,dist:i * 30};});
     this.width = width;
     this.height = height;
   }
 }
 
 class ObjectMapRenderer {
-  constructor(objectMap, spriteSheet, spriteSheet2) {
+  constructor(objectMap, spriteSheet, width, height) {
     this.objectMap = objectMap;
     this.spriteSheet = spriteSheet;
-    this.spriteSheet2 = spriteSheet2;
 
-    this.GenerateCanvas();
+    this.GenerateCanvas(width, height);
 
-    setInterval(function() {
-      this.Move();
+    ani.AddCaller(function(passed) {
+      this.Move(passed);
       this.Render();
-    }.bind(this), 20);
+    }.bind(this));
   }
 
-  GenerateCanvas() {
+  GenerateCanvas(width, height) {
     this.c = document.createElement("canvas");
     this.ctx = this.c.getContext("2d");
     this.ctx.imageSmoothingEnabled = false;
-    this.c.width = this.objectMap.width * this.spriteSheet.size;
-    this.c.height = this.objectMap.height * this.spriteSheet.size;
+    this.c.width = width;
+    this.c.height = height;
     document.body.append(this.c);
   }
 
@@ -132,22 +212,28 @@ class ObjectMapRenderer {
     for (var object of this.objectMap.objects) {
       var pos = this.objectMap.line.calculateXandYFromDistance(object.dist);
       var destinationRect = this.GetDestinationRect(pos);
-      this.spriteSheet2.DrawOnCanvas(this.ctx, object.id,
+      this.spriteSheet.DrawOnCanvas(this.ctx, object.id,
         destinationRect);
     }
   }
 
   GetDestinationRect(pos) {
-    var size = new Vector2(this.spriteSheet2.size, this.spriteSheet2.size);
+    var size = new Vector2(this.spriteSheet.size, this.spriteSheet.size);
     var pos = new Vector2(Math.round(pos.x), Math.round(pos.y)).subtract(size.devide(2));
     return new Rectangle(pos, size);
   }
 
-  Move() {
-    for (var i in this.objectMap.objects) {
-      this.objectMap.objects[i].dist++;
-      this.objectMap.objects[i].dist %= this.objectMap.line.len;
-    }
+  Move(passed, timestamp) {
+    var totalLength = this.objectMap.line.len;
+    this.objectMap.objects = this.objectMap.objects.map(o => {
+      return {
+        id: o.id,
+        dist: o.dist + passed / 10
+      };
+    }).filter(o => o.dist < totalLength);
+
+    if (this.objectMap.objects.length == 0 || this.objectMap.objects[this.objectMap.objects.length - 1].dist > 30)
+      this.objectMap.objects.push({id:Math.floor(Math.random() * 4), dist:0});
   }
 }
 
@@ -155,6 +241,10 @@ class Tiled {
   constructor(url) {
     this.url = url;
     this.layers = [];
+    this.layerSheetNames = [];
+
+    this.width = 0;
+    this.height = 0;
   }
 
   load() {
@@ -162,20 +252,34 @@ class Tiled {
   }
 
   parseFile(data) {
+    this.width = data.tilewidth * data.width;
+    this.height = data.tileheight * data.height;
+
     for (var layer of data.layers) {
-      if (layer.type == "tilelayer")
+      if (layer.name == "towers") {
+        this.layers.push(new TowerMap(layer.data, layer.width, layer.height));
+        this.layerSheetNames.push(this.getPropetyFromData(layer, "spriteSheet"));
+      } else if (layer.type == "tilelayer") {
         this.layers.push(new TileMap(layer.data, layer.width, layer.height));
+        this.layerSheetNames.push(this.getPropetyFromData(layer, "spriteSheet"));
+      }
 
       if (layer.name == "path") {
         var object = layer.objects[0];
         var tileLayer = data.layers.find(a => a.type == "tilelayer");
         this.layers.push(new ObjectMap(object.polyline, object.x, object.y, tileLayer.width, tileLayer.height));
+        this.layerSheetNames.push(this.getPropetyFromData(layer, "spriteSheet"));
       }
     }
+  }
+
+  getPropetyFromData(layer, name) {
+    return layer.properties.find(a => a.name == name).value;
   }
 
   RendererForLayer(layer) {
     if (layer instanceof TileMap) return TileMapRenderer;
     if (layer instanceof ObjectMap) return ObjectMapRenderer;
+    if (layer instanceof TowerMap) return TowerMapRenderer;
   }
 }
