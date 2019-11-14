@@ -22,6 +22,10 @@ class Vector2 {
   multiply(scale) {
     return new Vector2(this.x * scale, this.y * scale);
   }
+
+  devide(scale) {
+    return this.multiply(1/scale);
+  }
 }
 
 class Line {

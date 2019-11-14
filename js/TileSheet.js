@@ -97,16 +97,17 @@ class ObjectMap {
     });
 
     this.line = new Line(points);
-    this.objects = new Array(22).fill(1).map((a, i) => i * 30);
+    this.objects = new Array(22).fill(1).map((a, i) => {return {id:i%4,dist:i * 30};});
     this.width = width;
     this.height = height;
   }
 }
 
 class ObjectMapRenderer {
-  constructor(objectMap, spriteSheet) {
+  constructor(objectMap, spriteSheet, spriteSheet2) {
     this.objectMap = objectMap;
     this.spriteSheet = spriteSheet;
+    this.spriteSheet2 = spriteSheet2;
 
     this.GenerateCanvas();
 
@@ -128,18 +129,24 @@ class ObjectMapRenderer {
   Render() {
     this.ctx.clearRect(0, 0, this.c.width, this.c.height);
 
-    for (var dist of this.objectMap.objects) {
-      var pos = this.objectMap.line.calculateXandYFromDistance(dist);
-      this.ctx.beginPath();
-      this.ctx.arc(Math.round(pos.x), Math.round(pos.y), 4, 0, 2 * Math.PI);
-      this.ctx.stroke();
+    for (var object of this.objectMap.objects) {
+      var pos = this.objectMap.line.calculateXandYFromDistance(object.dist);
+      var destinationRect = this.GetDestinationRect(pos);
+      this.spriteSheet2.DrawOnCanvas(this.ctx, object.id,
+        destinationRect);
     }
+  }
+
+  GetDestinationRect(pos) {
+    var size = new Vector2(this.spriteSheet2.size, this.spriteSheet2.size);
+    var pos = new Vector2(Math.round(pos.x), Math.round(pos.y)).subtract(size.devide(2));
+    return new Rectangle(pos, size);
   }
 
   Move() {
     for (var i in this.objectMap.objects) {
-      this.objectMap.objects[i]++;
-      this.objectMap.objects[i] %= this.objectMap.line.len;
+      this.objectMap.objects[i].dist++;
+      this.objectMap.objects[i].dist %= this.objectMap.line.len;
     }
   }
 }
