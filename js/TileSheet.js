@@ -107,7 +107,7 @@ class TileMapRenderer {
 class TowerMap {
   constructor(tiles, width, height) {
     this.tiles = tiles;
-    this.rotation = 0;
+    this.rotation = new Array(tiles.length).fill(0).map(() => Math.random()*4);
     this.width = width;
     this.height = height;
   }
@@ -148,7 +148,7 @@ class TowerMapRenderer {
 
       this.ctx.save();
       this.ctx.translate(destinationRect.pos.x + destinationRect.size.x/2, destinationRect.pos.y + destinationRect.size.y/2);
-      this.ctx.rotate(this.tileMap.rotation );
+      this.ctx.rotate(this.tileMap.rotation[tile] );
       destinationRect.pos = destinationRect.size.devide(-2);
       this.spriteSheet.DrawOnCanvas(this.ctx, tileMap[tile] - 1,
         destinationRect);
@@ -164,7 +164,11 @@ class TowerMapRenderer {
   }
 
   Move(passed) {
-    this.tileMap.rotation += 0.01;
+    for (var tile in this.tileMap.tiles) {
+      if (this.tileMap.tiles[tile]) {
+        this.tileMap.rotation[tile] += 0.01;
+      }
+    }
   }
 }
 

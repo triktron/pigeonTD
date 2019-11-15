@@ -17,4 +17,6 @@ new SpriteSheetLoader(spritesheets, () => {
           renderer.Render();
         }
     });
+
+    
 });
