@@ -26,6 +26,12 @@ class Vector2 {
   devide(scale) {
     return this.multiply(1/scale);
   }
+
+  Distance(point) {
+    var diffX = this.x - point.x;
+    var diffY = this.y - point.y;
+    return Math.sqrt(diffX*diffX + diffY*diffY);
+  }
 }
 
 class Line {

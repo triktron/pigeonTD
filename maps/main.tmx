@@ -4,7 +4,7 @@
   <export target="test.json" format="json"/>
  </editorsettings>
  <tileset firstgid="1" source="main.tsx"/>
- <layer id="8" name="ground2" width="15" height="15">
+ <layer id="8" name="ground2" width="15" height="15" visible="0">
   <properties>
    <property name="spriteSheet" value="spriteSheet"/>
   </properties>
@@ -26,7 +26,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="3" name="ground" width="15" height="15">
+ <layer id="3" name="ground" width="15" height="15" visible="0">
   <properties>
    <property name="spriteSheet" value="spriteSheet"/>
   </properties>
@@ -48,7 +48,7 @@
 0,0,84,0,0,0,0,0,0,0,0,0,84,0,0
 </data>
  </layer>
- <layer id="4" name="flowers" width="15" height="15">
+ <layer id="4" name="flowers" width="15" height="15" visible="0">
   <properties>
    <property name="spriteSheet" value="spriteSheet"/>
   </properties>
@@ -70,7 +70,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="7" name="path">
+ <objectgroup id="7" name="path" visible="0">
   <properties>
    <property name="spriteSheet" value="baloons"/>
    <property name="tileID" type="int" value="1"/>
@@ -101,7 +101,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="9" name="trees" width="15" height="15">
+ <layer id="9" name="trees" width="15" height="15" visible="0">
   <properties>
    <property name="spriteSheet" value="spriteSheet"/>
   </properties>
