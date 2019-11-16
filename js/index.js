@@ -80,6 +80,7 @@ function FindClosestBaloon(point, baloons) {
 }
 
 window.addEventListener("resize", resize);
+window.addEventListener("orientationchange", resize);
 
 function resize() {
   if (window.innerHeight > window.innerWidth) {
