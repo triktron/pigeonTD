@@ -18,6 +18,7 @@ new SpriteSheetLoader(spritesheets, () => {
           tiled.AddRenderLayer(renderer, i);
         }
 
+        resize();
         startAnimation();
     });
 });
@@ -51,7 +52,6 @@ function startAnimation() {
     });
     this.Render();
   }.bind(tiled.renderLayers["towers"]));
-
 }
 
 function FindClosestBaloon(point, baloons) {
@@ -77,4 +77,14 @@ function FindClosestBaloon(point, baloons) {
   if (location.hash == "#debug") tiled.renderLayers["path"].ctx.stroke();
 
   return closest;
+}
+
+window.addEventListener("resize", resize);
+
+function resize() {
+  if (window.innerHeight > window.innerWidth) {
+    document.querySelectorAll("canvas").forEach(c => c.classList.add("height"));
+  } else {
+    document.querySelectorAll("canvas").forEach(c => c.classList.remove("height"));
+  }
 }
