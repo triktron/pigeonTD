@@ -102,6 +102,7 @@ class TowerMap {
     this.tiles = tiles;
     this.rotation = new Array(tiles.length).fill(0).map(() => Math.random()*4);
     this.cooldown = new Array(tiles.length).fill(0);
+    this.target = new Array(tiles.length).fill(false);
     this.width = width;
     this.height = height;
 
@@ -146,7 +147,13 @@ class TowerMap {
   Move(angleFn) {
     for (var tile in this.tiles) {
       if (this.tiles[tile]) {
-        this.rotation[tile] = angleFn(this.GetDestinationRect(tile));
+        var rot = angleFn(this.GetDestinationRect(tile));
+        if (rot) {
+          this.rotation[tile] = rot;
+          this.target[tile] = true;
+        } else {
+          this.target[tile] = false;
+        }
       }
     }
   }
@@ -155,7 +162,7 @@ class TowerMap {
     for (var tile in this.tiles) {
       if (this.tiles[tile]) {
         this.cooldown[tile] -= passed;
-        if (this.cooldown[tile] < 0) {
+        if (this.cooldown[tile] < 0 && this.target[tile]) {
           this.cooldown[tile] = 1000;
           this.Shoot(tile);
         };
@@ -218,7 +225,7 @@ class BaloonMap {
       };
     }).filter(o => o.dist < totalLength);
 
-    if (this.objects.length == 0 || this.objects[this.objects.length - 1].dist > 20)
+    if (this.objects.length == 0 || this.objects[this.objects.length - 1].dist > 30)
       this.objects.push({id:Math.floor(Math.random() * 4), dist:0});
   }
 }

@@ -4,7 +4,7 @@ class BaloonAI {
   }
 
   FindClosestBaloon(point, baloons) {
-    var closestDistance = Infinity;
+    var closestDistance = 70;
     var closest = null;
 
     if (location.hash == "#debug") tiled.layers["path"].ctx.beginPath();
@@ -41,7 +41,7 @@ class TowerAI {
     tower.pos = tower.pos.devide(4);
     tower.size = tower.size.devide(8);
     var closest = this.baloon.FindClosestBaloon(tower.pos.add(tower.size), tiled.layers["path"]);
-    var angle = 0;
+    var angle = null;
     if (closest) {
       var diffY = closest.pos.y - tower.pos.y - tower.size.y;
       var diffX = closest.pos.x - tower.pos.x - tower.size.x;
