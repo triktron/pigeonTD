@@ -71,4 +71,18 @@ class BulletAI {
   constructor() {
 
   }
+
+  Update(bullets, baloons) {
+    for (var bullet in bullets.objects) {
+      for (var baloon in baloons.objects) {
+        var pos = baloons.line.calculateXandYFromDistance(baloons.objects[baloon].dist);
+        var destinationRect = baloons.GetDestinationRect(pos);
+        if (destinationRect.Colide(bullets.GetDestinationRect(bullets.objects[bullet].pos))) {
+          bullets.objects.splice(bullet, 1);
+          baloons.objects.splice(baloon, 1);
+          break;
+        }
+      }
+    }
+  }
 }

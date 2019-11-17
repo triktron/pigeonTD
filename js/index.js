@@ -49,6 +49,7 @@ function addAnimation() {
     this.Move(passed);
     this.Render();
   }.bind(tiled.layers["bullets"]));
+  ani.AddCaller(AI.bullet.Update.bind(AI,tiled.layers["bullets"], tiled.layers["path"]));
 }
 
 window.addEventListener("resize", resize);

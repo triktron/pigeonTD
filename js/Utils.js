@@ -3,6 +3,20 @@ class Rectangle {
     this.pos = pos;
     this.size = size;
   }
+
+  PointInside(point) {
+    return point.x > this.pos.x &&
+           point.y > this.pos.y &&
+           point.x < this.pos.x + this.size.x &&
+           point.y < this.pos.y + this.size.y;
+  }
+
+  Colide(otherRect) {
+    return this.PointInside(otherRect.pos) ||
+           this.PointInside(otherRect.pos.add(otherRect.size)) ||
+           this.PointInside(otherRect.pos.add(new Vector2(0,otherRect.size.y))) ||
+           this.PointInside(otherRect.pos.add(new Vector2(0,otherRect.size.x)));
+  }
 }
 
 class Vector2 {

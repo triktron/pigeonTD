@@ -218,7 +218,7 @@ class BaloonMap {
       };
     }).filter(o => o.dist < totalLength);
 
-    if (this.objects.length == 0 || this.objects[this.objects.length - 1].dist > 100)
+    if (this.objects.length == 0 || this.objects[this.objects.length - 1].dist > 20)
       this.objects.push({id:Math.floor(Math.random() * 4), dist:0});
   }
 }
