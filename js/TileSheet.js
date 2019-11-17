@@ -106,6 +106,7 @@ class TowerMap {
   constructor(tiles, width, height) {
     this.tiles = tiles;
     this.rotation = new Array(tiles.length).fill(0).map(() => Math.random()*4);
+    this.cooldown = new Array(tiles.length).fill(0);
     this.width = width;
     this.height = height;
   }
@@ -163,9 +164,21 @@ class TowerMapRenderer {
       }
     }
   }
+
+  Update(passed) {
+    for (var tile in this.tileMap.tiles) {
+      if (this.tileMap.tiles[tile]) {
+        this.tileMap.cooldown[tile] -= passed;
+        if (this.tileMap.cooldown[tile] < 0) {
+          this.tileMap.cooldown[tile] = 1000;
+          this.Shoot(tile);
+        };
+      }
+    }
+  }
 }
 
-class ObjectMap {
+class BaloonMap {
   constructor(points, offsetX, offsetY, width, height) {
     points = points.map(p => {
       return {
@@ -181,7 +194,7 @@ class ObjectMap {
   }
 }
 
-class ObjectMapRenderer {
+class BaloonMapRenderer {
   constructor(objectMap, spriteSheet, width, height) {
     this.objectMap = objectMap;
     this.spriteSheet = spriteSheet;
@@ -204,6 +217,7 @@ class ObjectMapRenderer {
     for (var object of this.objectMap.objects) {
       var pos = this.objectMap.line.calculateXandYFromDistance(object.dist);
       var destinationRect = this.GetDestinationRect(pos);
+      console.log();
       this.spriteSheet.DrawOnCanvas(this.ctx, object.id,
         destinationRect);
     }
@@ -226,6 +240,60 @@ class ObjectMapRenderer {
 
     if (this.objectMap.objects.length == 0 || this.objectMap.objects[this.objectMap.objects.length - 1].dist > 100)
       this.objectMap.objects.push({id:Math.floor(Math.random() * 4), dist:0});
+  }
+}
+
+class SeedMap {
+  constructor(width, height) {
+    this.objects = [];//new Array(22).fill(1).map((a, i) => {return {id:i%4,dist:i * 30};});
+    this.width = width;
+    this.height = height;
+  }
+}
+
+class SeedMapRenderer {
+  constructor(objectMap, spriteSheet, width, height) {
+    this.objectMap = objectMap;
+    this.spriteSheet = spriteSheet;
+
+    this.GenerateCanvas(width, height);
+  }
+
+  GenerateCanvas(width, height) {
+    this.c = document.createElement("canvas");
+    this.ctx = this.c.getContext("2d");
+    this.ctx.imageSmoothingEnabled = false;
+    this.c.width = width;
+    this.c.height = height;
+    document.body.append(this.c);
+  }
+
+  Render() {
+    this.ctx.clearRect(0, 0, this.c.width, this.c.height);
+
+    for (var object of this.objectMap.objects) {
+      var destinationRect = this.GetDestinationRect(object.pos);
+      this.spriteSheet.DrawOnCanvas(this.ctx, object.id,
+        destinationRect);
+    }
+  }
+
+  GetDestinationRect(pos) {
+    var size = new Vector2(this.spriteSheet.size, this.spriteSheet.size);
+    var pos = new Vector2(Math.round(pos.x), Math.round(pos.y)).subtract(size.devide(2));
+    return new Rectangle(pos, size);
+  }
+
+  Move(passed, timestamp) {
+    for (var i in this.objectMap.objects) {
+      var object = this.objectMap.objects[i];
+      var vector = new Vector2(Math.cos(object.angle), Math.sin(object.angle)).multiply(passed/5);
+      this.objectMap.objects[i].pos = object.pos.add(vector);
+      if (this.objectMap.objects[i].pos.x > 1000 ||
+          this.objectMap.objects[i].pos.x < 0 ||
+          this.objectMap.objects[i].pos.y > 1000 ||
+          this.objectMap.objects[i].pos.y < 0) this.objectMap.objects.splice(i,1);
+    }
   }
 }
 
@@ -253,14 +321,20 @@ class Tiled {
         this.layers[layer.name] = new TowerMap(layer.data, layer.width, layer.height);
         this.layerSheetNames[layer.name] = this.getPropetyFromData(layer, "spriteSheet");
       } else if (layer.type == "tilelayer") {
+        console.log(layer.width, layer.height, this.width, this.height);
         this.layers[layer.name] = new TileMap(layer.data, layer.width, layer.height);
         this.layerSheetNames[layer.name] = this.getPropetyFromData(layer, "spriteSheet");
       }
 
       if (layer.name == "path") {
         var object = layer.objects[0];
-        var tileLayer = data.layers.find(a => a.type == "tilelayer");
-        this.layers[layer.name] = new ObjectMap(object.polyline, object.x, object.y, tileLayer.width, tileLayer.height);
+        this.layers[layer.name] = new BaloonMap(object.polyline, object.x, object.y, this.width, this.height);
+        this.layerSheetNames[layer.name] = this.getPropetyFromData(layer, "spriteSheet");
+      }
+
+      if (layer.name == "bullets") {
+        var object = layer.objects[0];
+        this.layers[layer.name] = new SeedMap(this.width, this.height);
         this.layerSheetNames[layer.name] = this.getPropetyFromData(layer, "spriteSheet");
       }
     }
@@ -272,7 +346,8 @@ class Tiled {
 
   RendererForLayer(layer) {
     if (layer instanceof TileMap) return TileMapRenderer;
-    if (layer instanceof ObjectMap) return ObjectMapRenderer;
+    if (layer instanceof BaloonMap) return BaloonMapRenderer;
+    if (layer instanceof SeedMap) return SeedMapRenderer;
     if (layer instanceof TowerMap) return TowerMapRenderer;
   }
 

@@ -1,22 +1,30 @@
-var spriteSheet = new SpriteSheet("./img/tileset.png");
-var baloons = new SpriteSheet("./img/baloons.png", 20);
-var bird = new SpriteSheet("./img/birb.png", 64);
+var spriteSheet = new SpriteSheet("img/tileset.png");
+var baloons = new SpriteSheet("img/baloons.png", 20);
+var bird = new SpriteSheet("img/birb.png", 64);
+var seeds = new SpriteSheet("img/bullet.png", 12);
 var tiled, ani = new Animation();
 
 var spritesheets = {
   spriteSheet: spriteSheet,
   baloons: baloons,
-  bird: bird
+  bird: bird,
+  seeds: seeds
 };
 
 new SpriteSheetLoader(spritesheets, () => {
-    tiled = new Tiled("./maps/test.json");
+    tiled = new Tiled("maps/test.json");
     tiled.load().then(() => {
         for (var i of Object.keys(tiled.layers)) {
           var ren = tiled.RendererForLayer(tiled.layers[i]);
           var renderer = new ren(tiled.layers[i], spritesheets[tiled.layerSheetNames[i]], tiled.width, tiled.height);
           tiled.AddRenderLayer(renderer, i);
         }
+
+        tiled.renderLayers["towers"].Shoot = function(tile) {
+          var pos = tiled.renderLayers["towers"].GetDestinationRect(tile);
+          pos = pos.pos.devide(4).add(pos.size.devide(8));
+          tiled.renderLayers["bullets"].objectMap.objects.push({pos:pos,id:0, angle:tiled.renderLayers["towers"].tileMap.rotation[tile]-Math.PI/2});
+        };
 
         resize();
         startAnimation();
@@ -50,8 +58,15 @@ function startAnimation() {
 
       return angle;
     });
+    this.Update(passed);
     this.Render();
   }.bind(tiled.renderLayers["towers"]));
+
+  ani.AddCaller(function(passed) {
+    this.Move(passed);
+
+    this.Render();
+  }.bind(tiled.renderLayers["bullets"]));
 }
 
 function FindClosestBaloon(point, baloons) {
