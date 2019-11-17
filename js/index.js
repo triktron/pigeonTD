@@ -4,6 +4,8 @@ var bird = new SpriteSheet("img/birb.png", 64);
 var seeds = new SpriteSheet("img/bullet.png", 12);
 var tiled, ani = new Animation();
 
+var screenhandler = new ClickHandler();
+
 var spritesheets = {
   spriteSheet: spriteSheet,
   baloons: baloons,
@@ -25,11 +27,24 @@ new SpriteSheetLoader(spritesheets, () => {
     resize();
     addAI();
     addAnimation();
+
+    //addUI();
   });
 });
 
 function addAI() {
   tiled.layers["towers"].Shoot = AI.tower.Shoot;
+}
+
+function addUI() {
+  window.button = new UIButton("TEST","red", "darkred", new Vector2(), new Vector2(50,20));
+  button.CenterMiddle(50);
+  button.Draw();
+
+  screenhandler.on("mouse", () => {
+    button.clear();
+    button.Draw(screenhandler.down);
+  });
 }
 
 
@@ -61,4 +76,6 @@ function resize() {
   } else {
     document.querySelectorAll("canvas").forEach(c => c.classList.remove("height"));
   }
+
+
 }
