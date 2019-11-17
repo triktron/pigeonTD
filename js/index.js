@@ -11,87 +11,44 @@ var spritesheets = {
   seeds: seeds
 };
 
+var AI = {
+  tower: new TowerAI(),
+  baloon: new BaloonAI(),
+  bullet: new BulletAI()
+};
+
 new SpriteSheetLoader(spritesheets, () => {
-    tiled = new Tiled("maps/test.json");
-    tiled.load().then(() => {
-        for (var i of Object.keys(tiled.layers)) {
-          var ren = tiled.RendererForLayer(tiled.layers[i]);
-          var renderer = new ren(tiled.layers[i], spritesheets[tiled.layerSheetNames[i]], tiled.width, tiled.height);
-          tiled.AddRenderLayer(renderer, i);
-        }
+  tiled = new Tiled("maps/test.json", spritesheets);
+  tiled.load().then(() => {
+    tiled.Redraw();
 
-        tiled.renderLayers["towers"].Shoot = function(tile) {
-          var pos = tiled.renderLayers["towers"].GetDestinationRect(tile);
-          pos = pos.pos.devide(4).add(pos.size.devide(8));
-          tiled.renderLayers["bullets"].objectMap.objects.push({pos:pos,id:0, angle:tiled.renderLayers["towers"].tileMap.rotation[tile]-Math.PI/2});
-        };
-
-        resize();
-        startAnimation();
-    });
+    resize();
+    addAI();
+    addAnimation();
+  });
 });
 
+function addAI() {
+  tiled.layers["towers"].Shoot = AI.tower.Shoot;
+}
 
-function startAnimation() {
 
-    ani.AddCaller(function(passed) {
-      this.Move(passed);
-      this.Render();
-    }.bind(tiled.renderLayers["path"]));
+function addAnimation() {
+  ani.AddCaller(function(passed) {
+    this.Move(passed);
+    this.Render();
+  }.bind(tiled.layers["path"]));
 
   ani.AddCaller(function(passed) {
-    this.Move(tower => {
-      tower.pos = tower.pos.devide(4);
-      tower.size = tower.size.devide(8);
-      var closest = FindClosestBaloon(tower.pos.add(tower.size), tiled.renderLayers["path"]);
-      var angle = 0;
-      if (closest) {
-        var diffY = closest.pos.y - tower.pos.y - tower.size.y;
-        var diffX = closest.pos.x - tower.pos.x - tower.size.x;
-        angle = Math.atan2(diffY,diffX) + Math.PI/2;
-        if (location.hash == "#debug") {
-          tiled.renderLayers["path"].ctx.beginPath();
-          tiled.renderLayers["path"].ctx.arc(closest.pos.x, closest.pos.y, 5, 0, 2*Math.PI);
-          tiled.renderLayers["path"].ctx.stroke();
-        }
-      }
-
-      return angle;
-    });
+    this.Move(AI.tower.GetAngle.bind(AI));
     this.Update(passed);
     this.Render();
-  }.bind(tiled.renderLayers["towers"]));
+  }.bind(tiled.layers["towers"]));
 
   ani.AddCaller(function(passed) {
     this.Move(passed);
-
     this.Render();
-  }.bind(tiled.renderLayers["bullets"]));
-}
-
-function FindClosestBaloon(point, baloons) {
-  var closestDistance = Infinity;
-  var closest = null;
-
-  if (location.hash == "#debug") tiled.renderLayers["path"].ctx.beginPath();
-
-  for (var ballon of baloons.objectMap.objects) {
-    var pos = baloons.objectMap.line.calculateXandYFromDistance(ballon.dist);
-    var distance = point.Distance(pos);
-    if (location.hash == "#debug") {
-      tiled.renderLayers["path"].ctx.moveTo(pos.x, pos.y);
-      tiled.renderLayers["path"].ctx.lineTo(point.x,point.y);
-    }
-
-
-    if (distance < closestDistance) {
-      closestDistance = distance;
-      closest = {baloon:ballon, pos:pos};
-    }
-  }
-  if (location.hash == "#debug") tiled.renderLayers["path"].ctx.stroke();
-
-  return closest;
+  }.bind(tiled.layers["bullets"]));
 }
 
 window.addEventListener("resize", resize);

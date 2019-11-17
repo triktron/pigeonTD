@@ -60,19 +60,13 @@ class SpriteSheetLoader {
 }
 
 class TileMap {
-  constructor(tiles, width, height) {
+  constructor(tiles, spriteSheet, width, height) {
+    this.spriteSheet = spriteSheet;
     this.tiles = tiles;
     this.width = width;
     this.height = height;
-  }
-}
 
-class TileMapRenderer {
-  constructor(tileMap, spriteSheet, width, height) {
-    this.tileMap = tileMap;
-    this.spriteSheet = spriteSheet;
-
-    this.GenerateCanvas(width, height);
+    this.GenerateCanvas(width * spriteSheet.size, height * spriteSheet.size);
   }
 
   GenerateCanvas(width, height) {
@@ -87,7 +81,7 @@ class TileMapRenderer {
   Render() {
     this.ctx.clearRect(0, 0, this.c.width, this.c.height);
 
-    var tileMap = this.tileMap.tiles;
+    var tileMap = this.tiles;
     for (var tile in tileMap) {
       var destinationRect = this.GetDestinationRect(tile);
       if (tileMap[tile]) this.spriteSheet.DrawOnCanvas(this.ctx, tileMap[tile] - 1,
@@ -96,26 +90,20 @@ class TileMapRenderer {
   }
 
   GetDestinationRect(tile) {
-    var pos = new Vector2(tile % this.tileMap.width, Math.floor(tile / this.tileMap.width)).multiply(this.spriteSheet.size);
+    var pos = new Vector2(tile % this.width, Math.floor(tile / this.width)).multiply(this.spriteSheet.size);
     var size = new Vector2(this.spriteSheet.size, this.spriteSheet.size);
     return new Rectangle(pos, size);
   }
 }
 
 class TowerMap {
-  constructor(tiles, width, height) {
+  constructor(tiles, spriteSheet, width, height) {
+    this.spriteSheet = spriteSheet;
     this.tiles = tiles;
     this.rotation = new Array(tiles.length).fill(0).map(() => Math.random()*4);
     this.cooldown = new Array(tiles.length).fill(0);
     this.width = width;
     this.height = height;
-  }
-}
-
-class TowerMapRenderer {
-  constructor(tileMap, spriteSheet) {
-    this.tileMap = tileMap;
-    this.spriteSheet = spriteSheet;
 
     this.GenerateCanvas();
   }
@@ -126,25 +114,23 @@ class TowerMapRenderer {
     this.ctx.imageSmoothingEnabled = false;
     this.ctx.webkitImageSmoothingEnabled = false;
     this.ctx.mozImageSmoothingEnabled = false;
-    console.log(this.spriteSheet);
-    this.c.width = this.tileMap.width * this.spriteSheet.size ;
-    this.c.height = this.tileMap.height * this.spriteSheet.size;
+    this.c.width = this.width * this.spriteSheet.size;
+    this.c.height = this.height * this.spriteSheet.size;
     document.body.append(this.c);
   }
 
   Render() {
   this.ctx.clearRect(0, 0, this.c.width, this.c.height);
 
-  var tileMap = this.tileMap.tiles;
-  for (var tile in tileMap) {
-    if (tileMap[tile]) {
+  for (var tile in this.tiles) {
+    if (this.tiles[tile]) {
       var destinationRect = this.GetDestinationRect(tile);
 
       this.ctx.save();
       this.ctx.translate(destinationRect.pos.x + destinationRect.size.x/2, destinationRect.pos.y + destinationRect.size.y/2);
-      this.ctx.rotate(this.tileMap.rotation[tile] );
+      this.ctx.rotate(this.rotation[tile] );
       destinationRect.pos = destinationRect.size.devide(-2);
-      this.spriteSheet.DrawOnCanvas(this.ctx, tileMap[tile] - 1,
+      this.spriteSheet.DrawOnCanvas(this.ctx, this.tiles[tile] - 1,
         destinationRect);
       this.ctx.restore();
     }
@@ -152,25 +138,25 @@ class TowerMapRenderer {
 }
 
   GetDestinationRect(tile) {
-    var pos = new Vector2(tile % this.tileMap.width, Math.floor(tile / this.tileMap.width)).multiply(this.spriteSheet.size);
+    var pos = new Vector2(tile % this.width, Math.floor(tile / this.width)).multiply(this.spriteSheet.size);
     var size = new Vector2(this.spriteSheet.size, this.spriteSheet.size);
     return new Rectangle(pos, size);
   }
 
   Move(angleFn) {
-    for (var tile in this.tileMap.tiles) {
-      if (this.tileMap.tiles[tile]) {
-        this.tileMap.rotation[tile] = angleFn(this.GetDestinationRect(tile));
+    for (var tile in this.tiles) {
+      if (this.tiles[tile]) {
+        this.rotation[tile] = angleFn(this.GetDestinationRect(tile));
       }
     }
   }
 
   Update(passed) {
-    for (var tile in this.tileMap.tiles) {
-      if (this.tileMap.tiles[tile]) {
-        this.tileMap.cooldown[tile] -= passed;
-        if (this.tileMap.cooldown[tile] < 0) {
-          this.tileMap.cooldown[tile] = 1000;
+    for (var tile in this.tiles) {
+      if (this.tiles[tile]) {
+        this.cooldown[tile] -= passed;
+        if (this.cooldown[tile] < 0) {
+          this.cooldown[tile] = 1000;
           this.Shoot(tile);
         };
       }
@@ -179,7 +165,9 @@ class TowerMapRenderer {
 }
 
 class BaloonMap {
-  constructor(points, offsetX, offsetY, width, height) {
+  constructor(points, offsetX, offsetY, spriteSheet, width, height) {
+    this.spriteSheet = spriteSheet;
+
     points = points.map(p => {
       return {
         x: p.x + offsetX,
@@ -191,13 +179,6 @@ class BaloonMap {
     this.objects = [];//new Array(22).fill(1).map((a, i) => {return {id:i%4,dist:i * 30};});
     this.width = width;
     this.height = height;
-  }
-}
-
-class BaloonMapRenderer {
-  constructor(objectMap, spriteSheet, width, height) {
-    this.objectMap = objectMap;
-    this.spriteSheet = spriteSheet;
 
     this.GenerateCanvas(width, height);
   }
@@ -214,10 +195,9 @@ class BaloonMapRenderer {
   Render() {
     this.ctx.clearRect(0, 0, this.c.width, this.c.height);
 
-    for (var object of this.objectMap.objects) {
-      var pos = this.objectMap.line.calculateXandYFromDistance(object.dist);
+    for (var object of this.objects) {
+      var pos = this.line.calculateXandYFromDistance(object.dist);
       var destinationRect = this.GetDestinationRect(pos);
-      console.log();
       this.spriteSheet.DrawOnCanvas(this.ctx, object.id,
         destinationRect);
     }
@@ -230,31 +210,26 @@ class BaloonMapRenderer {
   }
 
   Move(passed, timestamp) {
-    var totalLength = this.objectMap.line.len;
-    this.objectMap.objects = this.objectMap.objects.map(o => {
+    var totalLength = this.line.len;
+    this.objects = this.objects.map(o => {
       return {
         id: o.id,
         dist: o.dist + passed / 15
       };
     }).filter(o => o.dist < totalLength);
 
-    if (this.objectMap.objects.length == 0 || this.objectMap.objects[this.objectMap.objects.length - 1].dist > 100)
-      this.objectMap.objects.push({id:Math.floor(Math.random() * 4), dist:0});
+    if (this.objects.length == 0 || this.objects[this.objects.length - 1].dist > 100)
+      this.objects.push({id:Math.floor(Math.random() * 4), dist:0});
   }
 }
 
 class SeedMap {
-  constructor(width, height) {
-    this.objects = [];//new Array(22).fill(1).map((a, i) => {return {id:i%4,dist:i * 30};});
+  constructor(spriteSheet, width, height) {
+    this.spriteSheet = spriteSheet;
+
+    this.objects = [];
     this.width = width;
     this.height = height;
-  }
-}
-
-class SeedMapRenderer {
-  constructor(objectMap, spriteSheet, width, height) {
-    this.objectMap = objectMap;
-    this.spriteSheet = spriteSheet;
 
     this.GenerateCanvas(width, height);
   }
@@ -271,7 +246,7 @@ class SeedMapRenderer {
   Render() {
     this.ctx.clearRect(0, 0, this.c.width, this.c.height);
 
-    for (var object of this.objectMap.objects) {
+    for (var object of this.objects) {
       var destinationRect = this.GetDestinationRect(object.pos);
       this.spriteSheet.DrawOnCanvas(this.ctx, object.id,
         destinationRect);
@@ -285,24 +260,24 @@ class SeedMapRenderer {
   }
 
   Move(passed, timestamp) {
-    for (var i in this.objectMap.objects) {
-      var object = this.objectMap.objects[i];
+    for (var i in this.objects) {
+      var object = this.objects[i];
       var vector = new Vector2(Math.cos(object.angle), Math.sin(object.angle)).multiply(passed/5);
-      this.objectMap.objects[i].pos = object.pos.add(vector);
-      if (this.objectMap.objects[i].pos.x > 1000 ||
-          this.objectMap.objects[i].pos.x < 0 ||
-          this.objectMap.objects[i].pos.y > 1000 ||
-          this.objectMap.objects[i].pos.y < 0) this.objectMap.objects.splice(i,1);
+      this.objects[i].pos = object.pos.add(vector);
+      if (this.objects[i].pos.x > 1000 ||
+          this.objects[i].pos.x < 0 ||
+          this.objects[i].pos.y > 1000 ||
+          this.objects[i].pos.y < 0) this.objects.splice(i,1);
     }
   }
 }
 
 class Tiled {
-  constructor(url) {
+  constructor(url, spritesheets) {
     this.url = url;
     this.layers = {};
     this.renderLayers = {};
-    this.layerSheetNames = {};
+    this.spritesheets = spritesheets;
 
     this.width = 0;
     this.height = 0;
@@ -317,25 +292,21 @@ class Tiled {
     this.height = data.tileheight * data.height;
 
     for (var layer of data.layers) {
+      var spritesheet = this.spritesheets[this.getPropetyFromData(layer, "spriteSheet")];
+
       if (layer.name == "towers") {
-        this.layers[layer.name] = new TowerMap(layer.data, layer.width, layer.height);
-        this.layerSheetNames[layer.name] = this.getPropetyFromData(layer, "spriteSheet");
+        this.layers[layer.name] = new TowerMap(layer.data, spritesheet, layer.width, layer.height);
       } else if (layer.type == "tilelayer") {
-        console.log(layer.width, layer.height, this.width, this.height);
-        this.layers[layer.name] = new TileMap(layer.data, layer.width, layer.height);
-        this.layerSheetNames[layer.name] = this.getPropetyFromData(layer, "spriteSheet");
+        this.layers[layer.name] = new TileMap(layer.data, spritesheet, layer.width, layer.height);
       }
 
       if (layer.name == "path") {
         var object = layer.objects[0];
-        this.layers[layer.name] = new BaloonMap(object.polyline, object.x, object.y, this.width, this.height);
-        this.layerSheetNames[layer.name] = this.getPropetyFromData(layer, "spriteSheet");
+        this.layers[layer.name] = new BaloonMap(object.polyline, object.x, object.y, spritesheet, this.width, this.height);
       }
 
       if (layer.name == "bullets") {
-        var object = layer.objects[0];
-        this.layers[layer.name] = new SeedMap(this.width, this.height);
-        this.layerSheetNames[layer.name] = this.getPropetyFromData(layer, "spriteSheet");
+        this.layers[layer.name] = new SeedMap(spritesheet, this.width, this.height);
       }
     }
   }
@@ -344,15 +315,9 @@ class Tiled {
     return layer.properties.find(a => a.name == name).value;
   }
 
-  RendererForLayer(layer) {
-    if (layer instanceof TileMap) return TileMapRenderer;
-    if (layer instanceof BaloonMap) return BaloonMapRenderer;
-    if (layer instanceof SeedMap) return SeedMapRenderer;
-    if (layer instanceof TowerMap) return TowerMapRenderer;
-  }
-
-  AddRenderLayer(render, name) {
-    render.Render();
-    this.renderLayers[name] = render;
+  Redraw() {
+    for (var name of Object.keys(this.layers)) {
+      this.layers[name].Render();
+    }
   }
 }
