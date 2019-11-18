@@ -29,6 +29,7 @@ new SpriteSheetLoader(spritesheets, () => {
     addAnimation();
 
     //addUI();
+    document.querySelector(".singleplayer").addEventListener("click", () => document.body.classList.remove("menu"));
   });
 });
 
@@ -36,14 +37,15 @@ function addAI() {
   tiled.layers["towers"].Shoot = AI.tower.Shoot;
 }
 
+var buttons = [];
 function addUI() {
-  window.button = new UIButton("TEST","red", "darkred", new Vector2(), new Vector2(50,20));
-  button.CenterMiddle(50);
-  button.Draw();
+  var singleplayer = new UIButton("SINGLEPLAYER","#a1d1d2", "#688787", new Vector2(), new Vector2(200,70));
+  singleplayer.CenterMiddle(50);
+  singleplayer.Draw();
 
   screenhandler.on("mouse", () => {
-    button.clear();
-    button.Draw(screenhandler.down);
+    singleplayer.clear();
+    singleplayer.Draw(screenhandler.down);
   });
 }
 
@@ -72,10 +74,8 @@ window.addEventListener("orientationchange", resize);
 
 function resize() {
   if (window.innerHeight > window.innerWidth) {
-    document.querySelectorAll("canvas").forEach(c => c.classList.add("height"));
+    document.body.classList.add("portrait");
   } else {
-    document.querySelectorAll("canvas").forEach(c => c.classList.remove("height"));
+    document.body.classList.remove("portrait");
   }
-
-
 }

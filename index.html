@@ -14,42 +14,22 @@
   <script src="js/Animation.js" charset="utf-8"></script>
   <script src="js/TileSheet.js" charset="utf-8"></script>
 
-  <style media="screen">
-    canvas {
-      left: 50%;
-      top: 0;
-      transform: translateX(-50%);
-      position: absolute;
-      height: 100%;
-      image-rendering: -moz-crisp-edges;
-      image-rendering: -webkit-crisp-edges;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-    }
-
-    canvas.height {
-      height: auto !important;
-      width: 100%;
-    }
-
-    body {
-      background-color: rgb(41, 38, 52);
-      overflow: hidden;
-    }
-
-    .version {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      color: rgba(255,255,255,0.5);
-      font-weight: bold;
-      font-size: 10pt;
-    }
-  </style>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/menu.css">
 </head>
 
-<body>
+<body class="menu">
   <script src="js/index.js" charset="utf-8"></script>
+
+  <img src="img/banner.png" class="banner" alt="">
+
+  <div class="buttons">
+  <a href="#" class="button singleplayer">SINGLEPLAYER</a>
+  <a href="#" class="button">MULTYPLAYER</a>
+  <a href="#" class="button">SETTINGS</a>
+  <a href="#" class="button">EXIT</a>
+  </div>
+
 
   <div class="version">V0.0.3</div>
 

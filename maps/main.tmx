@@ -81,7 +81,7 @@
  </objectgroup>
  <objectgroup id="12" name="bullets">
   <properties>
-   <property name="spriteSheet" value="seeds"/>
+   <property name="spriteSheet" value="seed"/>
   </properties>
  </objectgroup>
  <layer id="11" name="towers" width="15" height="15">
