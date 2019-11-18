@@ -28,19 +28,25 @@ body:not(.portrait).menu canvas {
     width: 90%;
 }
 
+
+li
+{
+    text-align: center;
+    display: table-row;
+}
+
 .button {
 	box-shadow: 0px 4px 0px 0px #688787;
 	background-color:#a1d1d2;
 	border:1px solid #688787;
-	display:inline-block;
 	cursor:pointer;
 	color:#000;
 	font-family:Arial;
 	font-size:25px;
 	padding:7px 25px;
 	text-decoration:none;
-	margin-top: 50%;
-	/* margin-left: 0px; */
+	display: table-cell;
+	vertical-align: middle;
 }
 .button:hover {
 	background-color:#90bbbc;
@@ -57,11 +63,18 @@ body:not(.portrait).menu canvas {
 }
 
 .menu .buttons {
+  height: 100%;
   position: fixed;
-  display: grid;
-  /* margin-bottom: 5px; */
-  left: 60px;
+  top: 0;
+  margin: 0;
+  padding: 0;
+  left: 20px;
   z-index: 20;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  display: table;
+  table-layout: fixed;
+  border-spacing: 0 40px;
 }
 
 .portrait .button {
@@ -71,5 +84,13 @@ body:not(.portrait).menu canvas {
 .portrait .buttons {
   transform: translateX(-50%);
   left: 50%;
-  bottom: 20vw;
+  top: 40%;
+  height: 50%;
+}
+
+@media screen and (min-width: 800px) {
+    .menu .buttons {
+        border-spacing: 0 80px;
+        width: 33%;
+    }
 }
