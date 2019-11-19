@@ -45,17 +45,19 @@ class SpriteSheet {
 }
 
 class SpriteSheetLoader {
-  constructor(spritesheets, cb) {
+  constructor(spritesheets) {
     this.left = Object.keys(spritesheets).length;
     this.spritesheets = spritesheets;
-    this.cb = cb;
 
     for (var spriteSheet of Object.keys(spritesheets)) spritesheets[spriteSheet].setLoad(this.checkDone.bind(this));
   }
 
   checkDone() {
     this.left--;
-    if (this.left == 0) this.cb(this.spritesheets);
+  }
+
+  WhenReady(cb) {
+    if (this.left == 0) cb(this.spritesheets); else setTimeout(this.WhenReady.bind(this, cb), 100);
   }
 }
 

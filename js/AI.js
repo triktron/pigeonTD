@@ -7,12 +7,12 @@ class BaloonAI {
     var closestDistance = 70;
     var closest = null;
 
-    if (location.hash == "#debug") tiled.layers["path"].ctx.beginPath();
+    if (location.hash.includes("#debug")) tiled.layers["path"].ctx.beginPath();
 
     for (var ballon of baloons.objects) {
       var pos = baloons.line.calculateXandYFromDistance(ballon.dist);
       var distance = point.Distance(pos);
-      if (location.hash == "#debug") {
+      if (location.hash.includes("#debug")) {
         tiled.layers["path"].ctx.moveTo(pos.x, pos.y);
         tiled.layers["path"].ctx.lineTo(point.x, point.y);
       }
@@ -26,7 +26,7 @@ class BaloonAI {
         };
       }
     }
-    if (location.hash == "#debug") tiled.layers["path"].ctx.stroke();
+    if (location.hash.includes("#debug")) tiled.layers["path"].ctx.stroke();
 
     return closest;
   }
@@ -37,7 +37,7 @@ class TowerAI {
 
   }
 
-  GetAngle(tower) {
+  GetAngle(tiled, tower) {
     tower.pos = tower.pos.devide(4);
     tower.size = tower.size.devide(8);
     var closest = this.baloon.FindClosestBaloon(tower.pos.add(tower.size), tiled.layers["path"]);
@@ -56,7 +56,7 @@ class TowerAI {
     return angle;
   }
 
-  Shoot(tile) {
+  Shoot(tiled, tile) {
     var pos = tiled.layers["towers"].GetDestinationRect(tile);
     pos = pos.pos.devide(4).add(pos.size.devide(8));
     tiled.layers["bullets"].objects.push({
@@ -79,7 +79,11 @@ class BulletAI {
         var destinationRect = baloons.GetDestinationRect(pos);
         if (destinationRect.Colide(bullets.GetDestinationRect(bullets.objects[bullet].pos))) {
           bullets.objects.splice(bullet, 1);
-          baloons.objects.splice(baloon, 1);
+          baloons.objects[baloon].id--;
+          console.log(baloons.objects[baloon]);
+          if (baloons.objects[baloon].id <= 0) {
+            baloons.objects.splice(baloon, 1);
+          }
           break;
         }
       }
