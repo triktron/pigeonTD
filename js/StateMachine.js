@@ -2,7 +2,7 @@ class StateMachine {
   constructor() {
     this.animation = new Animation();
     this.animation.AddCaller(this.draw.bind(this));
-    this.currentState = "";
+    this.currentState = "menu";
     this.states = {
       menu: new MenuState(this),
       singleplayer: new SingleplayerState(this)
@@ -20,7 +20,7 @@ class StateMachine {
   }
 
   SetState(name) {
-    if (this.currentState != "") this.states[this.currentState].stop();
+    this.states[this.currentState].stop();
     this.currentState = name;
     this.states[this.currentState].start();
   }
