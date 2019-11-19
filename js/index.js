@@ -10,3 +10,5 @@ function resize() {
     document.body.classList.remove("portrait");
   }
 }
+
+resize();
